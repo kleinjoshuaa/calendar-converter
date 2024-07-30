@@ -12,7 +12,7 @@ exports.handler = async (event, context) => {
     const filteredCfpEvents = cfpEvents.filter(cfp => {
       const today = moment().tz('UTC');
       const untilDate = moment(cfp.untilDate).tz('UTC');
-      return today.isBefore(untilDate);
+      return today.isBefore(untilDate) && cfp.conf.location.toLowerCase() !== 'online';;
     });
 
     // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
