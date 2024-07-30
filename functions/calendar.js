@@ -17,7 +17,7 @@ exports.handler = async (event, context) => {
       start: moment(event.start_date).format('YYYY-M-D-H-m').split('-').map(Number),
       end: moment(event.end_date).format('YYYY-M-D-H-m').split('-').map(Number),
       location: event.location,
-      cfp: event.cfp,
+      cfp: JSON.stringify(event.cfp),
     }));
 
     const { error, value } = createEvents(eventList);
@@ -26,7 +26,7 @@ exports.handler = async (event, context) => {
       console.log(error);
       return {
         statusCode: 500,
-        body: 'Error generating iCalendar file'+error,
+        body: 'Error generating iCalendar file',
       };
     }
 
