@@ -18,6 +18,8 @@ exports.handler = async (event, context) => {
       end: moment(event.date.length > 1 ? event.date[1] : event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
       location: event.location,
       description: event.misc,
+      created: moment(event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
+      lastModified: moment(event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number)
     }));
 
     const { error, value } = createEvents(eventList);
