@@ -26,7 +26,7 @@ exports.handler = async (event, context) => {
       console.log(error);
       return {
         statusCode: 500,
-        body: 'Error generating iCalendar file',
+        body: 'Error generating iCalendar file'+error,
       };
     }
 
