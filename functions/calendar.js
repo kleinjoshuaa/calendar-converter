@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { createEvents } = require('ics');
+const moment = require('moment');
 
 exports.handler = async (event, context) => {
   try {
@@ -7,12 +8,16 @@ exports.handler = async (event, context) => {
     const response = await axios.get(url);
     const events = response.data;
 
-    const eventList = events.map(event => ({
+    // Filter events based on status and location
+    const filteredEvents = events.filter(event => event.status === 'open' && event.location.toLowerCase() !== 'online');
+
+    // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
+    const eventList = filteredEvents.map(event => ({
       title: event.name,
-      start: event.start_date.split('-').map(Number),
-      end: event.end_date.split('-').map(Number),
+      start: moment(event.start_date).format('YYYY-M-D-H-m').split('-').map(Number),
+      end: moment(event.end_date).format('YYYY-M-D-H-m').split('-').map(Number),
       location: event.location,
-      description: event.description,
+      cfp: event.cfp,
     }));
 
     const { error, value } = createEvents(eventList);
@@ -41,4 +46,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-
