@@ -17,7 +17,7 @@ exports.handler = async (event, context) => {
       start: moment(event.start_date).format('YYYY-M-D-H-m').split('-').map(Number),
       end: moment(event.end_date).format('YYYY-M-D-H-m').split('-').map(Number),
       location: event.location,
-      cfp: JSON.stringify(event.cfp),
+      misc: event.misc,
     }));
 
     const { error, value } = createEvents(eventList);
