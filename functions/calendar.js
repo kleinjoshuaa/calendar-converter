@@ -4,32 +4,30 @@ const moment = require('moment-timezone');
 
 exports.handler = async (event, context) => {
   try {
-    const url = 'https://developers.events/all-events.json';
+    const url = 'https://developers.events/all-cfps.json';
     const response = await axios.get(url);
-    const events = response.data;
+    const cfpEvents = response.data;
 
-    // Filter events based on status and location
-    const filteredEvents = events.filter(event => {
-      const start = moment(event.date[0]).tz('UTC');
-      return event.status === 'open' && event.location.toLowerCase() !== 'online' && start.isAfter(moment().tz('UTC'));
+    // Filter CFP events where today is less than the untilDate
+    const filteredCfpEvents = cfpEvents.filter(cfp => {
+      const today = moment().tz('UTC');
+      const untilDate = moment(cfp.untilDate).tz('UTC');
+      return today.isBefore(untilDate);
     });
 
     // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
-    const eventList = filteredEvents.map(event => {
-      const start = moment(event.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
-      let end;
-      if (event.date.length > 1) {
-        end = moment(event.date[1]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
-      } else {
-        end = moment(event.date[0]).tz('UTC').endOf('day').format('YYYY-M-D-H-m').split('-').map(Number);
-      }
+    const eventList = filteredCfpEvents.map(cfp => {
+      const start = moment(cfp.conf.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
+      const end = cfp.conf.date.length > 1 
+        ? moment(cfp.conf.date[1]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number)
+        : moment(cfp.conf.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
 
       return {
-        title: event.name,
+        title: `${cfp.conf.name} CFP Deadline`,
         start: start,
         end: end,
-        location: event.location,
-        description: event.misc || event.hyperlink || '',  // Use misc or hyperlink as description
+        location: cfp.conf.location,
+        description: cfp.link || cfp.conf.hyperlink || '',  // Use CFP link or conference hyperlink as description
       };
     });
 
@@ -47,7 +45,7 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       headers: {
         'Content-Type': 'text/calendar',
-        'Content-Disposition': 'attachment; filename="events.ics"',
+        'Content-Disposition': 'attachment; filename="cfp-deadlines.ics"',
       },
       body: value,
     };
@@ -55,7 +53,7 @@ exports.handler = async (event, context) => {
     console.error(err);
     return {
       statusCode: 500,
-      body: 'Error fetching events data',
+      body: 'Error fetching CFP data',
     };
   }
 };
