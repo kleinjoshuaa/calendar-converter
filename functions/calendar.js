@@ -14,8 +14,8 @@ exports.handler = async (event, context) => {
     // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
     const eventList = filteredEvents.map(event => ({
       title: event.name,
-      start: moment(event.start_date).format('YYYY-M-D-H-m').split('-').map(Number),
-      end: moment(event.end_date).format('YYYY-M-D-H-m').split('-').map(Number),
+      start: moment(event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
+      end: moment(event.date.length > 1 ? event.date[1] : event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
       location: event.location,
       description: event.misc,
     }));
