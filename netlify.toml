@@ -1,7 +1,7 @@
 [build]
   command = "npm install"
   functions = "functions"
-  publish = "public"
+  publish = "."
 
 [[redirects]]
   from = "/calendar.ics"
