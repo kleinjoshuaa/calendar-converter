@@ -16,7 +16,7 @@ exports.handler = async (event, context) => {
       const start = moment(event.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
       const end = event.date.length > 1 
         ? moment(event.date[1]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number)
-        : moment(event.date[0]).tz('UTC').add(1, 'day').format('YYYY-M-D-H-m').split('-').map(Number);
+        : moment(event.date[0]).tz('UTC').add(0, 'day').format('YYYY-M-D-H-m').split('-').map(Number);
 
       return {
         title: event.name,
