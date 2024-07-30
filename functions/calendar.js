@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { createEvents } = require('ics');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 exports.handler = async (event, context) => {
   try {
@@ -12,15 +12,20 @@ exports.handler = async (event, context) => {
     const filteredEvents = events.filter(event => event.status === 'open' && event.location.toLowerCase() !== 'online');
 
     // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
-    const eventList = filteredEvents.map(event => ({
-      title: event.name,
-      start: moment(event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
-      end: moment(event.date.length > 1 ? event.date[1] : event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
-      location: event.location,
-      description: event.misc,
-      created: moment(event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number),
-      lastModified: moment(event.date[0]).format('YYYY-M-D-H-m').split('-').map(Number)
-    }));
+    const eventList = filteredEvents.map(event => {
+      const start = moment(event.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
+      const end = event.date.length > 1 
+        ? moment(event.date[1]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number)
+        : moment(event.date[0]).tz('UTC').add(1, 'day').format('YYYY-M-D-H-m').split('-').map(Number);
+
+      return {
+        title: event.name,
+        start: start,
+        end: end,
+        location: event.location,
+        description: event.misc || event.hyperlink || '',  // Use misc or hyperlink as description
+      };
+    });
 
     const { error, value } = createEvents(eventList);
 
