@@ -9,7 +9,10 @@ exports.handler = async (event, context) => {
     const events = response.data;
 
     // Filter events based on status and location
-    const filteredEvents = events.filter(event => event.status === 'open' && event.location.toLowerCase() !== 'online');
+    const filteredEvents = events.filter(event => {
+      const start = moment(event.date[0]).tz('UTC');
+      return event.status === 'open' && event.location.toLowerCase() !== 'online' && start.isAfter(moment().tz('UTC'));
+    });
 
     // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
     const eventList = filteredEvents.map(event => {
