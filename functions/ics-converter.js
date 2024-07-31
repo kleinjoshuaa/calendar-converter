@@ -1,6 +1,7 @@
 const axios = require('axios');
 const ical = require('ical');
 const { createEvents } = require('ics');
+const moment = require('moment-timezone');
 
 exports.handler = async (event, context) => {
   try {
@@ -17,14 +18,29 @@ exports.handler = async (event, context) => {
 
     // Convert filtered events to the format required by ics library
     const eventList = filteredEvents.map(event => {
+      const start = [
+        event.start.getUTCFullYear(),
+        event.start.getUTCMonth() + 1,
+        event.start.getUTCDate(),
+        event.start.getUTCHours(),
+        event.start.getUTCMinutes()
+      ];
+      const end = [
+        event.end.getUTCFullYear(),
+        event.end.getUTCMonth() + 1,
+        event.end.getUTCDate(),
+        event.end.getUTCHours(),
+        event.end.getUTCMinutes()
+      ];
+
       return {
         uid: event.uid,
-        start: [event.start.getUTCFullYear(), event.start.getUTCMonth() + 1, event.start.getUTCDate()],
-        end: [event.end.getUTCFullYear(), event.end.getUTCMonth() + 1, event.end.getUTCDate()],
+        start: start,
+        end: end,
         title: event.summary,
         location: event.location,
         description: event.description,
-        url: event.url
+        url: typeof event.url === 'object' ? event.url.val : event.url  // Ensure url is a string
       };
     });
 
