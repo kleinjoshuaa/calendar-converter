@@ -8,19 +8,19 @@ exports.handler = async (event, context) => {
     const response = await axios.get(url);
     const cfpEvents = response.data;
 
-    // Filter CFP events where today is less than the untilDate
+    // Filter CFP events where today is less than the untilDate and location is not 'Online'
     const filteredCfpEvents = cfpEvents.filter(cfp => {
       const today = moment().tz('UTC');
       const untilDate = moment(cfp.untilDate).tz('UTC');
-      return today.isBefore(untilDate) && cfp.conf.location.toLowerCase() !== 'online';;
+      return today.isBefore(untilDate) && cfp.conf.location.toLowerCase() !== 'online';
     });
 
     // Convert Unix ms timestamp to array format [YYYY, MM, DD, HH, mm, ss]
     const eventList = filteredCfpEvents.map(cfp => {
-      const start = moment(cfp.conf.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
+      const start = moment(cfp.conf.date[0]).tz('UTC').format('YYYY-M-D').split('-').map(Number);
       const end = cfp.conf.date.length > 1 
-        ? moment(cfp.conf.date[1]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number)
-        : moment(cfp.conf.date[0]).tz('UTC').format('YYYY-M-D-H-m').split('-').map(Number);
+        ? moment(cfp.conf.date[1]).tz('UTC').add(1, 'day').format('YYYY-M-D').split('-').map(Number)
+        : moment(cfp.conf.date[0]).tz('UTC').add(1, 'day').format('YYYY-M-D').split('-').map(Number); // Add 1 day to end for all-day event
 
       return {
         title: `${cfp.conf.name} CFP Deadline`,
@@ -28,10 +28,15 @@ exports.handler = async (event, context) => {
         end: end,
         location: cfp.conf.location,
         description: cfp.link || cfp.conf.hyperlink || '',  // Use CFP link or conference hyperlink as description
+        allDay: true  // Mark as an all-day event
       };
     });
 
-    const { error, value } = createEvents(eventList);
+    const { error, value } = createEvents(eventList.map(event => ({
+      ...event,
+      start: { date: event.start },
+      end: { date: event.end },
+    })));
 
     if (error) {
       console.log(error);
